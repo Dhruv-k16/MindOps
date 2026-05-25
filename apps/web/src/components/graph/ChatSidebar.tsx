@@ -33,7 +33,7 @@ export default function ChatSidebar({ projectId, isOpen, onClose }: { projectId:
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const response = await fetch(`http://localhost:3000/ai/${projectId}/chat`, {
+      const response = await fetch(`${API_URL}/ai/${projectId}/chat`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

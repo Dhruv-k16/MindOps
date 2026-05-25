@@ -35,7 +35,7 @@ export default function FinancialModule({ projectId }: { projectId: string }) {
 
   const fetchEntries = async () => {
     const { data: { session } } = await supabase.auth.getSession()
-    const response = await fetch(`http://localhost:3000/finance/${projectId}`, {
+    const response = await fetch(`${API_URL}/finance/${projectId}`, {
       headers: { 'Authorization': `Bearer ${session?.access_token}` }
     })
     const data = await response.json()
@@ -45,7 +45,7 @@ export default function FinancialModule({ projectId }: { projectId: string }) {
   const handleCreate = async () => {
     if (!newEntry.category || newEntry.amount <= 0) return
     const { data: { session } } = await supabase.auth.getSession()
-    await fetch(`http://localhost:3000/finance/${projectId}`, {
+    await fetch(`${API_URL}/finance/${projectId}`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ export default function FinancialModule({ projectId }: { projectId: string }) {
 
   const deleteEntry = async (id: string) => {
     const { data: { session } } = await supabase.auth.getSession()
-    await fetch(`http://localhost:3000/finance/${id}`, {
+    await fetch(`${API_URL}/finance/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${session?.access_token}` }
     })

@@ -19,7 +19,7 @@ interface ProjectState {
   createProject: (data: { name: string; vision?: string }) => Promise<void>
 }
 
-const API_URL = 'http://localhost:3000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 export const useProjectStore = create<ProjectState>((set) => ({
   projects: [],

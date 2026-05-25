@@ -20,7 +20,7 @@ export default function VaultPanel({ nodeId }: { nodeId: string }) {
 
   const fetchAssets = async () => {
     const { data: { session } } = await supabase.auth.getSession()
-    const response = await fetch(`http://localhost:3000/vault/nodes/${nodeId}/assets`, {
+    const response = await fetch(`${API_URL}/vault/nodes/${nodeId}/assets`, {
       headers: { 'Authorization': `Bearer ${session?.access_token}` }
     })
     const data = await response.json()
@@ -48,7 +48,7 @@ export default function VaultPanel({ nodeId }: { nodeId: string }) {
         .getPublicUrl(fileName)
 
       // 2. Link to Node in Backend
-      await fetch(`http://localhost:3000/vault/nodes/${nodeId}/assets`, {
+      await fetch(`${API_URL}/vault/nodes/${nodeId}/assets`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export default function VaultPanel({ nodeId }: { nodeId: string }) {
 
   const deleteAsset = async (id: string) => {
     const { data: { session } } = await supabase.auth.getSession()
-    await fetch(`http://localhost:3000/vault/assets/${id}`, {
+    await fetch(`${API_URL}/vault/assets/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${session?.access_token}` }
     })

@@ -22,7 +22,7 @@ export default function JournalView() {
 
   const fetchEntries = async () => {
     const { data: { session } } = await supabase.auth.getSession()
-    const response = await fetch('http://localhost:3000/journal', {
+    const response = await fetch('${API_URL}/journal', {
       headers: { 'Authorization': `Bearer ${session?.access_token}` }
     })
     const data = await response.json()
@@ -36,7 +36,7 @@ export default function JournalView() {
     setIsLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      await fetch('http://localhost:3000/journal', {
+      await fetch('${API_URL}/journal', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
