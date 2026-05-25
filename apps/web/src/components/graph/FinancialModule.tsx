@@ -5,6 +5,9 @@ import { DollarSign, Plus, Trash2, PieChart, TrendingUp, ArrowUpRight, ArrowDown
 import { Button, cn } from '../ui/core'
 import { supabase } from '../../lib/supabase'
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+
 interface FinanceEntry {
   id: string
   type: 'REVENUE' | 'EXPENSE' | 'FUNDING'

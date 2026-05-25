@@ -4,6 +4,9 @@ import { BookOpen, Send, Calendar, Star, TrendingUp, TrendingDown } from 'lucide
 import { Button, cn } from '../ui/core'
 import { supabase } from '../../lib/supabase'
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+
 interface Entry {
   id: string
   content: string
