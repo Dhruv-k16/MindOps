@@ -40,7 +40,7 @@ export class AIService {
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
       const result = await model.generateContent(prompt);
       const raw = result.response.text().trim();
       // Strip markdown code fences if present
@@ -69,7 +69,7 @@ export class AIService {
 
     try {
       const model = this.genAI.getGenerativeModel({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.0-flash-lite',
         systemInstruction: systemPrompt,
       });
       const result = await model.generateContent(message);
@@ -86,7 +86,7 @@ export class AIService {
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'text-embedding-004' });
+      const model = this.genAI.getGenerativeModel({ model: 'text-embedding-001' });
       const result = await model.embedContent(text);
       return result.embedding.values;
     } catch (err) {
