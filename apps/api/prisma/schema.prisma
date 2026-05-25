@@ -70,12 +70,12 @@ model Edge {
 }
 
 model Memory {
-  id        String                       @id @default(uuid())
-  nodeId    String?                      @unique
-  node      Node?                        @relation(fields: [nodeId], references: [id])
+  id        String                      @id @default(uuid())
+  nodeId    String?                     @unique
+  node      Node?                       @relation(fields: [nodeId], references: [id])
   content   String
-  embedding Unsupported("vector(1536)")? // pgvector
-  createdAt DateTime                     @default(now())
+  embedding Unsupported("vector(768)")? // pgvector
+  createdAt DateTime                    @default(now())
 }
 
 model JournalEntry {

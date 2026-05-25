@@ -1,20 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class AIService {
-  private openai: OpenAI;
+  private genAI: GoogleGenerativeAI | null = null;
 
   constructor(private configService: ConfigService) {
-    const apiKey = this.configService.get('OPENAI_API_KEY');
-    if (!apiKey || apiKey === 'sk-xxxx') {
-      console.warn('⚠️ OPENAI_API_KEY is missing or using placeholder. AI features will run in MOCK mode.');
-      this.openai = null as any;
+    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    if (!apiKey) {
+      console.warn('⚠️ GEMINI_API_KEY is missing. AI features will run in MOCK mode.');
     } else {
-      this.openai = new OpenAI({
-        apiKey,
-      });
+      this.genAI = new GoogleGenerativeAI(apiKey);
     }
   }
 
@@ -28,38 +25,36 @@ export class AIService {
 
       Input: "${text}"
 
-      Return ONLY a JSON object with the following structure:
+      Return ONLY a JSON object with the following structure, no markdown, no backticks:
       {
         "nodes": [{ "id": "string", "type": "string", "label": "string", "content": "string" }],
         "edges": [{ "source": "string", "target": "string", "label": "string" }]
       }
     `;
 
-    try {
-      if (!this.openai) {
-        return {
-          nodes: [
-            { id: '1', type: 'IDEA', label: 'Mock Idea', content: 'This is a mock node because no API key was provided.' }
-          ],
-          edges: []
-        };
-      }
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
-      });
+    if (!this.genAI) {
+      return {
+        nodes: [{ id: '1', type: 'IDEA', label: 'Mock Idea', content: 'Mock mode — no API key provided.' }],
+        edges: []
+      };
+    }
 
-      return JSON.parse(response.choices[0].message.content!);
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(prompt);
+      const raw = result.response.text().trim();
+      // Strip markdown code fences if present
+      const clean = raw.replace(/^```json\n?|\n?```$/g, '').trim();
+      return JSON.parse(clean);
     } catch (err) {
-      console.error('AI Processing Error:', err);
+      console.error('AI structureBrainDump error:', err);
       return { nodes: [], edges: [] };
     }
   }
 
   async chat(message: string, context: string) {
     const systemPrompt = `
-      You are MindOps AI, a strategic co-founder assistant. 
+      You are MindOps AI, a strategic co-founder assistant.
       Your goal is to help the founder execute their project by providing strategic advice, identifying risks, and suggesting next steps.
       
       CURRENT PROJECT CONTEXT:
@@ -68,28 +63,35 @@ export class AIService {
       Be concise, premium, and highly strategic. Avoid generic advice.
     `;
 
-    if (!this.openai) {
-      return "I'm running in MOCK mode because no OpenAI API key was provided. I can still help you with structural advice, but my intelligence is currently limited!";
+    if (!this.genAI) {
+      return "I'm running in MOCK mode because no Gemini API key was provided.";
     }
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-    });
 
-    return response.choices[0].message.content;
+    try {
+      const model = this.genAI.getGenerativeModel({
+        model: 'gemini-1.5-flash',
+        systemInstruction: systemPrompt,
+      });
+      const result = await model.generateContent(message);
+      return result.response.text();
+    } catch (err) {
+      console.error('AI chat error:', err);
+      return 'AI is temporarily unavailable. Please try again.';
+    }
   }
 
   async generateEmbedding(text: string) {
-    if (!this.openai) {
-      return new Array(1536).fill(0); // Return zero vector for mock
+    if (!this.genAI) {
+      return new Array(768).fill(0); // Gemini embeddings are 768-dim
     }
-    const response = await this.openai.embeddings.create({
-      model: 'text-embedding-3-small',
-      input: text,
-    });
-    return response.data[0].embedding;
+
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'text-embedding-004' });
+      const result = await model.embedContent(text);
+      return result.embedding.values;
+    } catch (err) {
+      console.error('Embedding error:', err);
+      return new Array(768).fill(0);
+    }
   }
 }
