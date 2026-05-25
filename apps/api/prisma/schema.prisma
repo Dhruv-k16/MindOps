@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  supabaseId    String    @unique
+  email         String    @unique
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  projects      Project[]
+  journalEntries JournalEntry[]
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  vision      String?
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  nodes       Node[]
+  edges       Edge[]
+  snapshots   ProjectSnapshot[]
+  finances    FinanceModel[]
+}
+
+model Node {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  type        String   // IDEA, TASK, RISK, REVENUE, INSIGHT, DOCUMENT
+  content     Json     // Flexible content storage
+  positionX   Float    @default(0)
+  positionY   Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  memories    Memory[]
+  assets      Asset[]
+}
+
+model Asset {
+  id          String   @id @default(uuid())
+  nodeId      String
+  node        Node     @relation(fields: [nodeId], references: [id])
+  name        String
+  url         String
+  type        String   // PDF, IMAGE, DOC
+  createdAt   DateTime @default(now())
+}
+
+model Edge {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  sourceId    String
+  targetId    String
+  type        String   // DEPENDENCY, PARENT_CHILD, PIVOT
+  content     String?
+  createdAt   DateTime @default(now())
+}
+
+model Memory {
+  id          String   @id @default(uuid())
+  nodeId      String?  @unique
+  node        Node?    @relation(fields: [nodeId], references: [id])
+  content     String
+  embedding   Unsupported("vector(1536)")? // pgvector
+  createdAt   DateTime @default(now())
+}
+
+model JournalEntry {
+  id          String   @id @default(uuid())
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id])
+  content     String
+  sentiment   String?
+  createdAt   DateTime @default(now())
+}
+
+model ProjectSnapshot {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  state       Json     // Full graph state snapshot
+  createdAt   DateTime @default(now())
+}
+
+model FinanceModel {
+  id          String   @id @default(uuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  type        String   // REVENUE, EXPENSE, FUNDING
+  category    String
+  amount      Float
+  frequency   String   // MONTHLY, ONE_TIME, YEARLY
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+}

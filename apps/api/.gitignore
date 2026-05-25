@@ -1,0 +1,23 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/generated/prisma
+
+# Environment variables
+.env
+.env.*
+
+# App env files
+apps/api/.env
+apps/web/.env
+
+# Node modules
+node_modules/
+
+# Build folders
+dist/
+build/
+
+# Logs
+*.log
